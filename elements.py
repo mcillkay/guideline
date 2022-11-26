@@ -50,3 +50,4 @@ class Contract():
         self.deadline = ...  : datetime
         self.repeat = ... : bool
         self.stake = ... : float
+        self.strict = ... : bool
