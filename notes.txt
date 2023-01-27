@@ -1,0 +1,31 @@
+complifications. generally want to avoid but think about them: 
+
+categorical one off tasks. -send this letter, etc. 
+
+weekly goals. maybe you don't want to do something daily, but only so much per week
+
+also, week on, week off. say when it's your week with the kids, etc. how to do this?
+
+think about what happens when someone changes their goal amount IN THE MIDDLE OF A DAY after already working on it some. the amount column of the timesheet will have different values within a single day, like: 
+.25 
+.25 
+.25 
+.5
+.5  
+if they shifted it up. 
+
+---
+The other thing that Beeminder could really use is an upgrade on its design. Not sure what your thoughts are here but I would change most things. That’s just me of course. 
+
+Also, the charts are nice, but they are hitting about 10% of their potential. There are many obvious things. The updates do not happen when the actual time is logged, but all time is aggregated to a single data point. It would be very easy to fix this, why not do it? All the lines and so forth are not really helpful. I can’t zoom in, overlay, look at averages, 
+
+Beeminder is pitched as being for nerds, but what are you doing with all that data? What can I, as a user, do with it? Basically nothing. But this is the actual gold here, because users would LOVE to get metrics on their own performance and tips on how to improve etc. 
+
+I can’t automatically set thresholds. I have a goal that is to do zero mg of caffeine. I derailed from it and now the new level is at 180 mg. I can’t instantly set it back to zero, I have to wait a week to do that, and while it is tapering down I have a week’s worth of caffeine to drink. Also lame. 
+
+The deeper issue here is that there is no way of setting a goal to STAY ON TARGET. So if you go below or above it, you derail. 
+---
+
+
+
+
