@@ -51,6 +51,15 @@ def get_timesheet_entries_on_date(df, date):
     midnight_tomorrow = datetime(y, m, d + 1)
     return df[(df[c.START] >= midnight) & (df[c.START] < midnight_tomorrow)]
 
+def update_timesheet(res, start_time, stop_time):
+    df = res[c.TIMESHEET]
+    df.loc[len(df), c.AMOUNT] = res[c.AMOUNT]
+    df.loc[len(df)-1, c.START] = start_time
+
+    df = res[c.TIMESHEET]
+    df.loc[len(df)-1, c.STOP] = stop_time
+    return df
+
 def parse_total_seconds(n):
     hours = n // 3600
     minutes = (n % 3600) // 60

@@ -13,6 +13,7 @@ guideline.py new
 guideline.py start <task>
 guideline.py skip <task>
 guideline.py plan
+guideline.py schedule
 guideline.py view <task>
 guideline.py strict (enable|disable) <task>
 
@@ -21,7 +22,10 @@ Options:
 -h, --help                  Show this screen
 """
 
-#TODO: categorical tasks, time total for a task, different units (caffeine mg, cigarettes), strict mode, payments, pledge growth curves, pod algorithm, data analysis, skip task, sick + vacation, notes, personal best, live progress bar,
+#TODO: categorical tasks, time total for a task, different units (caffeine mg, cigarettes), strict mode, payments, pledge growth curves, pod algorithm, data analysis, skip task, sick + vacation, notes, personal best, live progress bar, different accounts (one for me and rowan eg), support for changing task name
+
+#TODO: others using: if data dir not exist, make it,
+#NOTE: keep data dir out of public github (that's private information)
 
 import os
 import data
@@ -57,7 +61,10 @@ if __name__ == '__main__':
 
         task_path = c.DATA_PATH / res[c.TASK]
 
-        if  os.path.exists(c.DATA_PATH / task_path): #don't save over everything
+        if not os.path.exists(c.DATA_PATH):
+            call(['mkdir', c.DATA_PATH])
+
+        if os.path.exists(c.DATA_PATH / task_path): #don't save over everything
             print(f'task {res[c.TASK]} already exists!')
         else:
             data.save_data(res)
@@ -70,9 +77,13 @@ if __name__ == '__main__':
     #Start the timer
     if kwargs['start']:
         task = kwargs['<task>']
-
+        res = data.load_data(task)
+        df = res[c.TIMESHEET]
 
         start_time = datetime.now()
+        df.loc[len(df), c.AMOUNT] = res[c.AMOUNT]
+        df.loc[len(df)-1, c.START] = start_time
+        data.save_data(res)
 
         print(f'\nstarted {c.OKCYAN}{task}{c.ENDC} at {display.format_date(start_time)}... work hard!')
 
@@ -81,16 +92,8 @@ if __name__ == '__main__':
             user_input = input('\ntype \'stop\' to exit: > ')
 
             if user_input == "stop":
-                res = data.load_data(task)
-                assert res[c.TASK] == task
-
-                df = res[c.TIMESHEET]
-                df.loc[len(df), c.AMOUNT] = res[c.AMOUNT]
-                df.loc[len(df)-1, c.START] = start_time
 
                 stop_time = datetime.now()
-
-                df = res[c.TIMESHEET]
                 df.loc[len(df)-1, c.STOP] = stop_time
 
                 data.save_data(res)
@@ -169,11 +172,11 @@ if __name__ == '__main__':
     if kwargs['display'] or kwargs['d']:
         if kwargs['<task>']:
             task = kwargs['<task>']
-            display.display(task, datetime.now())
+            display.get_progress_bar(task, datetime.now())
         else:
             tasks = c.DATA_PATH.glob('*')
             for task in tasks:
-                display.display(task.name, datetime.now())
+                display.get_progress_bar(task.name, datetime.now())
 
     #Print derails
     if kwargs['derail']:
@@ -194,4 +197,7 @@ if __name__ == '__main__':
                     if work_seconds < goal_seconds:
                         print(f'{c.FAIL} DERAIL: {task} on {date}')
 
-
+    #Print schedule
+    if kwargs['schedule']:
+        tasks = c.DATA_PATH.glob('*')
+        display.schedule()

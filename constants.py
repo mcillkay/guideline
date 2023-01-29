@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 HEADER = '\033[95m'
-OKBLUE = '\033[94m'
+PURPLE = '\033[94m'
 OKCYAN = '\033[96m'
 OKGREEN = '\033[92m'
 WARNING = '\033[93m'
@@ -34,5 +34,7 @@ TIMESHEET_COLS = [START, STOP, AMOUNT]
 CONTRACT_PROMPTS = ['name of task', 'number of hours per day']
 
 USER_COLUMNS = ['name', 'created', 'pod']
+
+WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 
