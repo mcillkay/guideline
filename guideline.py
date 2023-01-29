@@ -62,7 +62,7 @@ if __name__ == '__main__':
         task_path = c.DATA_PATH / res[c.TASK]
 
         if not os.path.exists(c.DATA_PATH):
-            call(['mkdir', c.DATA_PATH])
+            os.mkdir(c.DATA_PATH)
 
         if os.path.exists(c.DATA_PATH / task_path): #don't save over everything
             print(f'task {res[c.TASK]} already exists!')
