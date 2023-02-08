@@ -1,6 +1,7 @@
 import re
 import pandas as pd
-from datetime import datetime
+import numpy as np
+from datetime import datetime, timedelta
 import constants as c
 import pickle
 
@@ -48,7 +49,7 @@ def get_timesheet_entries_before_date(df, date):
 def get_timesheet_entries_on_date(df, date):
     y, m, d = date.year, date.month, date.day
     midnight = datetime(y, m, d)
-    midnight_tomorrow = datetime(y, m, d + 1)
+    midnight_tomorrow = datetime(y, m, d) + timedelta(days=1)
     return df[(df[c.START] >= midnight) & (df[c.START] < midnight_tomorrow)]
 
 def update_timesheet(res, start_time, stop_time):
@@ -74,7 +75,7 @@ def get_goal_seconds(res, date):
     else:
         df = get_timesheet_entries_before_date(res[c.TIMESHEET], date)
 
-        if len(df) != 0: #no entries that date
+        if len(df) != 0:
             hours = df.iloc[-1][c.AMOUNT]
         else:
             hours = res[c.AMOUNT]
@@ -100,8 +101,24 @@ def get_work_seconds(res, date):
 
     return deltas.sum().total_seconds()
 
+def get_weekday(res, date):
+    delta = date - res[c.STARTDATE]
+    days = delta.days + res[c.STARTDATE].weekday()
+    return days % (7 * res[c.PERIOD])
+
+
 def get_work_multiple(res, date):
-    return int(res[c.SCHEDULE][date.weekday()])
+    return int(res[c.SCHEDULE][get_weekday(res, date)])
+    # df = get_timesheet_entries_on_date(res[c.TIMESHEET], date)
+    # if len(df) != 0:
+    #     return df.iloc[-1][c.MULTIPLE]
+    # else:
+    #     df = get_timesheet_entries_before_date(res[c.TIMESHEET], date)
+
+    #     if len(df) != 0:
+    #         return df.iloc[-1][c.MULTIPLE]
+    #     else:
+    #         return int(res[c.SCHEDULE][date.weekday()])
 
 def goal_is_active(res, date):
     return get_work_multiple(res, date)
@@ -109,10 +126,33 @@ def goal_is_active(res, date):
 # matches a string consisting of an integer followed by either a divisor
 # ("/" and an integer) or some spaces and a simple fraction (two integers
 # separated by "/")
-FRACTION_REGEX = re.compile(r'^(\d+)(?:(?:\s+(\d+))?/(\d+))?$')
 
 def frac_to_float(x):
-  i, n, d = FRACTION_REGEX.match(x).groups()
+  i, n, d = c.FRACTION_REGEX.match(x).groups()
   if d is None: n, d = 0, 1  # if d is None, then n is also None
   if n is None: i, n = 0, i
   return float(i) + float(n) / float(d)
+
+
+def skip(task, date, reason):
+    res = load_data(task)
+    if res[c.STRICT]:
+        print(f'You cannot skip {task}, it is in strict mode!')
+        return
+    res[c.BREAKS].append((date, reason))
+    save_data(res)
+
+def growth_curve(base, num, curve):
+    #given base pledge rate and number of iterations, return current pledge amount
+    if curve == 0:
+        return base
+
+    elif curve == 1: #linear
+        return base * num
+
+    elif curve == 2: #exponential
+        return base * np.exp(num/2)
+
+    else: #sinusoidal
+        return  base + (1 + c.A*np.cos((num+6)*np.pi/6))
+

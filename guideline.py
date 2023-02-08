@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """guideline
-
 Usage:
 guideline.py delete <task>
 guideline.py display [<task>] [-d <date>]
@@ -12,6 +11,7 @@ guideline.py manual <task>
 guideline.py new
 guideline.py start <task>
 guideline.py skip <task>
+guideline.py break
 guideline.py plan
 guideline.py schedule
 guideline.py view <task>
@@ -22,9 +22,34 @@ Options:
 -h, --help                  Show this screen
 """
 
-#TODO: categorical tasks, time total for a task, different units (caffeine mg, cigarettes), strict mode, payments, pledge growth curves, pod algorithm, data analysis, skip task, sick + vacation, notes, personal best, live progress bar, different accounts (one for me and rowan eg), support for changing task name
+#TODO:
+# categorical tasks ?? :
+# different units ?? (caffeine mg: cigarettes):
+# payments:
+#   stripe back end
+# pledge growth curves:
+#   implement
+#   see total derail amount
+#   see total paid amount
+#   see amount at risk
+# pod algorithm:
+# data analysis:
+# notes:
+# personal best:
+# live progress bar:
+# different accounts (one for me and rowan eg):
+# support for changing task name:
+# total time left in day vs time pledged:
+# better derail functionality:
+# warnings:
+    #see all time committed in a line next to rabbit of day:
+    #deadline:
+# ability to globally set deadline (9pm: 12am):
+# global vars? :
 
-#TODO: others using: if data dir not exist, make it,
+#TODO BUGZ
+
+#TODO: others using:
 #NOTE: keep data dir out of public github (that's private information)
 
 import os
@@ -46,17 +71,29 @@ if __name__ == '__main__':
     if kwargs['new']:
         n = datetime.now()
         days = int(input('Start in how many days? 0 for today, 1 for tomorrow, etc. > '))
-        res = {c.STARTDATE: datetime(year=n.year, month=n.month, day=n.day + days)}
+        res = {c.STARTDATE: datetime(year=n.year, month=n.month, day=n.day) + timedelta(days=days)}
+
+        res[c.TYPE] = input('are you trying to do more or less of something? (enter more or less) > ')
+        assert res[c.TYPE] in ['more', 'less']
 
         res[c.TASK] = input('name of task > ')
         amount = input('hours per day > ' )
-        res[c.AMOUNT] = float(amount) if '.' in amount else data.frac_to_float(input)
-        res[c.SCHEDULE] = input('how many multiples of your per day do you want to work each day of the week? 0 for no work, 1 for base amount, 2 for twice that... only integers like this: 1121100 > \n\tMTWRFSS\n\t')
-        assert len(res[c.SCHEDULE]) == 7
+        res[c.AMOUNT] = float(amount) if '.' in amount else data.frac_to_float(amount)
+
+        res[c.PERIOD] = int(input('repeat your schedule every 1, 2, 3... weeks? > '))
+        weekly = 'MTWRFSS' * int(res[c.PERIOD])
+        res[c.SCHEDULE] = input(f'how many multiples of your per day do you want to work each day of the week? 0 for no work, 1 for base amount, 2 for twice that... (only integers like this: 1121100) > \n\t{weekly}\n\t')
+        assert len(res[c.schedule]) == 7 * res[c.period]
+
         res[c.PLEDGE] = float(input('$ committed per derail > '))
+        res[c.GROWTH_CURVE] = input('how should pledge change each time you derail and have to pay? you can change this at any time unless you are in strict mode. options: 0 (no change), 1 (linear growth), 2 (exponential growth), 3 (sinusoidal growth) > ')
+        assert res[c.GROWTH_CURVE] in [0, 1, 2, 3]
+
         res[c.STRICT] = int(input('1 for strict mode, 0 otherwise > '))
         assert res[c.STRICT] in [0, 1]
+
         res[c.LAX_TIME] = None
+        res[c.BREAKS] = []
         res[c.TIMESHEET] = data.new_timesheet(res[c.TASK])
 
         task_path = c.DATA_PATH / res[c.TASK]
@@ -83,6 +120,7 @@ if __name__ == '__main__':
         start_time = datetime.now()
         df.loc[len(df), c.AMOUNT] = res[c.AMOUNT]
         df.loc[len(df)-1, c.START] = start_time
+        df.loc[len(df)-1, c.MULTIPLE] = data.get_work_multiple(res, start_time)
         data.save_data(res)
 
         print(f'\nstarted {c.OKCYAN}{task}{c.ENDC} at {display.format_date(start_time)}... work hard!')
@@ -130,6 +168,30 @@ if __name__ == '__main__':
                 data.save_data(res)
 
 
+    if kwargs['skip']:
+        now = datetime.now()
+        task = kwargs['<task>']
+        res = data.load_data(task)
+        if res[c.STRICT]:
+            print(f'You cannot skip {task}, it is in strict mode!')
+        else:
+            reason = input('Reason for break? Can be anything. For example: none, vacation, sick... >')
+            data.skip(task, now, reason)
+
+
+    if kwargs['break']:
+        now = datetime.now()
+        tasks = c.DATA_PATH.glob('*')
+        days = input('Number of days for break? Any number greater than 0...')
+        assert days > 0
+        reason = input('Reason for break? Can be anything. For example: none, vacation, sick...')
+        for d in range(days):
+            date = now + timedelta(days=d)
+            for task in tasks:
+                data.skip(task, date, reason)
+
+
+
     if kwargs['total']:
         task = kwargs['<task>']
         res = data.load_data(task)
@@ -140,10 +202,11 @@ if __name__ == '__main__':
     if kwargs['edit']:
         task = kwargs['<task>']
         res = data.load_data(task)
-        if res[c.STRICT] and res[c.LAX_TIME] and datetime.now() < res[c.LAX_TIME]:
+        if res[c.STRICT] and (not res[c.LAX_TIME] or  datetime.now() < res[c.LAX_TIME]):
             print(f'Strict mode is enabled for {task}, unfortunately you cannot make any changes.')
         else:
             print('edit now, then continue (press \'c\') to save... BE CAREFUL!')
+            df = res['timesheet']
             breakpoint()
             data.save_data(res)
             print(f'saved changes to {c.DATA_PATH / res[c.TASK]}')
@@ -163,6 +226,7 @@ if __name__ == '__main__':
         df.loc[len(df), c.AMOUNT] = res[c.AMOUNT]
         df.loc[len(df)-1, c.START] = start_time
         df.loc[len(df)-1, c.STOP] = stop_time
+        df.loc[len(df)-1, c.MULTIPLE] = data.get_work_multiple(res, start_time)
 
         data.save_data(res)
 
@@ -201,3 +265,4 @@ if __name__ == '__main__':
     if kwargs['schedule']:
         tasks = c.DATA_PATH.glob('*')
         display.schedule()
+       display.schedule()
