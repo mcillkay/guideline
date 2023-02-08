@@ -265,4 +265,3 @@ if __name__ == '__main__':
     if kwargs['schedule']:
         tasks = c.DATA_PATH.glob('*')
         display.schedule()
-       display.schedule()
