@@ -86,7 +86,7 @@ if __name__ == '__main__':
         assert len(res[c.SCHEDULE]) == 7 * res[c.PERIOD]
 
         res[c.PLEDGE] = float(input('$ committed per derail > '))
-        res[c.GROWTH_CURVE] = input('how should pledge change each time you derail and have to pay? you can change this at any time unless you are in strict mode. options: 0 (no change), 1 (linear growth), 2 (exponential growth), 3 (sinusoidal growth) > ')
+        res[c.GROWTH_CURVE] = int(input('how should pledge change each time you derail and have to pay? you can change this at any time unless you are in strict mode. options: 0 (no change), 1 (linear growth), 2 (exponential growth), 3 (sinusoidal growth) > '))
         assert res[c.GROWTH_CURVE] in [0, 1, 2, 3]
 
         res[c.STRICT] = int(input('1 for strict mode, 0 otherwise > '))
