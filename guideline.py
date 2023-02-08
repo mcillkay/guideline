@@ -83,7 +83,7 @@ if __name__ == '__main__':
         res[c.PERIOD] = int(input('repeat your schedule every 1, 2, 3... weeks? > '))
         weekly = 'MTWRFSS' * int(res[c.PERIOD])
         res[c.SCHEDULE] = input(f'how many multiples of your per day do you want to work each day of the week? 0 for no work, 1 for base amount, 2 for twice that... (only integers like this: 1121100) > \n\t{weekly}\n\t')
-        assert len(res[c.SCHEDULE]) == 7 * res[c.period]
+        assert len(res[c.SCHEDULE]) == 7 * res[c.PERIOD]
 
         res[c.PLEDGE] = float(input('$ committed per derail > '))
         res[c.GROWTH_CURVE] = input('how should pledge change each time you derail and have to pay? you can change this at any time unless you are in strict mode. options: 0 (no change), 1 (linear growth), 2 (exponential growth), 3 (sinusoidal growth) > ')
