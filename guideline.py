@@ -9,6 +9,8 @@ guideline.py edit <task>
 guideline.py total <task>
 guideline.py manual <task>
 guideline.py new
+guideline.py total
+guideline.py today
 guideline.py start <task>
 guideline.py skip <task>
 guideline.py break
@@ -32,6 +34,11 @@ Options:
 #   see total derail amount
 #   see total paid amount
 #   see amount at risk
+# time management:
+#   see how much free time you have left in the day
+# deadline:
+#   set global deadline for all tasks
+#   set local deadlines?
 # pod algorithm:
 # data analysis:
 # notes:
@@ -192,12 +199,6 @@ if __name__ == '__main__':
 
 
 
-    if kwargs['total']:
-        task = kwargs['<task>']
-        res = data.load_data(task)
-        h, m, s = data.parse_total_seconds(data.get_total_work_seconds(res))
-        print(f'Total time of {h} hours, {m} minutes and {s} seconds on {task}')
-
 
     if kwargs['edit']:
         task = kwargs['<task>']
@@ -263,5 +264,27 @@ if __name__ == '__main__':
 
     #Print schedule
     if kwargs['schedule']:
-        tasks = c.DATA_PATH.glob('*')
         display.schedule()
+
+    if kwargs['total']:
+        if kwargs['<task>']:
+            tasks = [kwargs['<task>']]
+        else:
+            tasks = [task.name for task in c.DATA_PATH.glob('*')]
+        for task in tasks:
+            res = data.load_data(task)
+            h, m, s = data.parse_total_seconds(data.get_total_work_seconds(res))
+            print(f'total time of {h} hours, {m} minutes and {s} seconds on {task}')
+
+    #Print
+    if kwargs['today']:
+        date = datetime.now()
+        time, money = 0, 0
+        tasks = c.DATA_PATH.glob('*')
+        for task in tasks:
+            res = data.load_data(task)
+            multiple =  data.get_work_multiple(res, date)
+            time += res[c.AMOUNT] * multiple
+            money += res[c.PLEDGE]
+
+        print(f'\nYou have committed {time} hours today and put ${money} on the hook.\n')
