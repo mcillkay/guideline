@@ -35,6 +35,10 @@ def new_timesheet(task):
     df.index.name = task
     return df
 
+def load_test_data(task):
+    with open(c.TEST_PATH / c.DATA_DIR / task, 'rb') as to_load:
+        return pickle.load(to_load)
+
 def load_data(task):
     with open(c.DATA_PATH / task, 'rb') as to_load:
         return pickle.load(to_load)
