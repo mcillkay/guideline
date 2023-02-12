@@ -33,12 +33,14 @@ A = 10  #amplitude for sinusoidal growth curve
 
 PROJECT_NAME = 'guideline'
 DATA_DIR = 'data'
+TEST_DIR = 'test'
 CONTRACTS_FILE = 'contracts.csv'
 
 FRACTION_REGEX = re.compile(r'^(\d+)(?:(?:\s+(\d+))?/(\d+))?$')
 
 PROJECT_PATH = Path(os.path.dirname(os.path.realpath(__file__)))
 DATA_PATH = PROJECT_PATH / DATA_DIR
+TEST_PATH = PROJECT_PATH / TEST_DIR
 # CONTRACTS_PATH = PROJECT_PATH / DATA_DIR / CONTRACTS_FILE
 
 TIMESHEET_COLS = [START, STOP, AMOUNT, MULTIPLE]
