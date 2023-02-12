@@ -261,6 +261,26 @@ if __name__ == '__main__':
                     work_seconds = data.get_work_seconds(res, date) #[c.TIMESHEET], date)
                     if work_seconds < goal_seconds:
                         print(f'{c.FAIL} DERAIL: {task} on {date}')
+        else:
+            tasks = c.DATA_PATH.glob('*')
+            for task in tasks:
+                derails, money, step = 0, 0, 0
+                res = data.load_data(task)
+                day = res[c.STARTDATE]
+                date = lambda x: day + timedelta(days=x)
+                while date(step) < datetime.now():
+                    goal_seconds = data.get_goal_seconds(res, date(step))
+                    work_seconds = data.get_work_seconds(res, date(step))
+                    if work_seconds < goal_seconds:
+                        derails += 1
+                        df = get_timesheet_entries_on_date(res[c.TIMESHEET], date(step))
+                        pledge = df.loc[-1, c.PLEDGE] if len(df) > 0 else res[c.PLEDGE]
+                        money += pledge
+                    step += 1
+                print(f'\nderailed {derails} times for a total of ${pledge} on {task}\n')
+
+
+
 
     #Print schedule
     if kwargs['schedule']:
