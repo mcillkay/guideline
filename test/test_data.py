@@ -49,7 +49,7 @@ class TestData(unittest.TestCase):
         goal_seconds = data.get_goal_seconds(self.res, wednesday)
         self.assertTrue(goal_seconds == 60*60*2)
 
-    def test_get_weekday(self(:
+    def test_get_weekday(self):
         ...
 
 if __name__ == '__main__':
